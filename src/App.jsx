@@ -35,10 +35,6 @@ export default function App() {
   const [userId, setUserId] = useState(null);
   const [sendStatus, setSendStatus] = useState({}); // contactId -> "sending" | "sent" | "error"
 
-  const TWILIO_SID = "AC4939389c9e06fe8d4ecc02279f7d9e11";
-  const TWILIO_AUTH = "2671084ed2510396872c8d01ea2edba5";
-  const TWILIO_FROM = "+14058775486";
-
   async function sendTestSms(contact) {
     if (!contact.phone) return;
     setSendStatus((s) => ({ ...s, [contact.id]: "sending" }));
@@ -49,24 +45,15 @@ export default function App() {
       to = "+81" + to.slice(1);
     }
 
-    const body = new URLSearchParams({
-      To: to,
-      From: TWILIO_FROM,
-      Body: `【のこす手紙】${currentUser} さんの緊急連絡先として登録されています。これはテスト通知です。`,
-    });
-
     try {
-      const res = await fetch(
-        `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: "Basic " + btoa(`${TWILIO_SID}:${TWILIO_AUTH}`),
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body,
-        }
-      );
+      const res = await fetch("/api/send-sms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to,
+          message: `【のこす手紙】${currentUser} さんの緊急連絡先として登録されています。これはテスト通知です。`,
+        }),
+      });
       if (res.ok) {
         setSendStatus((s) => ({ ...s, [contact.id]: "sent" }));
       } else {
