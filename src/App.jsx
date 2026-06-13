@@ -54,13 +54,17 @@ export default function App() {
           message: `【のこす手紙】${currentUser} さんの緊急連絡先として登録されています。これはテスト通知です。`,
         }),
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setSendStatus((s) => ({ ...s, [contact.id]: "sent" }));
       } else {
-        setSendStatus((s) => ({ ...s, [contact.id]: "error" }));
+        setSendStatus((s) => ({
+          ...s,
+          [contact.id]: "error:" + JSON.stringify(data.error || data),
+        }));
       }
     } catch (e) {
-      setSendStatus((s) => ({ ...s, [contact.id]: "error" }));
+      setSendStatus((s) => ({ ...s, [contact.id]: "error:" + e.message }));
     }
   }
 
@@ -512,8 +516,10 @@ export default function App() {
                       {sendStatus[c.id] === "sent" && (
                         <span style={{ fontSize: 12, color: "#7A8B6F", marginLeft: 8 }}>送信しました</span>
                       )}
-                      {sendStatus[c.id] === "error" && (
-                        <span style={{ fontSize: 12, color: "#B5533C", marginLeft: 8 }}>送信に失敗しました</span>
+                      {typeof sendStatus[c.id] === "string" && sendStatus[c.id].startsWith("error") && (
+                        <div style={{ fontSize: 11, color: "#B5533C", marginTop: 4, wordBreak: "break-all" }}>
+                          {sendStatus[c.id]}
+                        </div>
                       )}
                     </div>
                   )}
