@@ -31,7 +31,7 @@ export default function App() {
     setStage("login");
   }, []);
 
-  const [accessToken, setAccessToken] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState(null);
   const [sendStatus, setSendStatus] = useState({}); // contactId -> "sending" | "sent" | "error"
 
@@ -75,8 +75,8 @@ export default function App() {
       return;
     }
 
+    setLoading(true);
     try {
-    if (mode === "signup") {
       const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY },
@@ -159,6 +159,8 @@ export default function App() {
     setStage("app");
     } catch (e) {
       setAuthError("通信に失敗しました: " + e.message);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -307,22 +309,42 @@ export default function App() {
 
             <button
               type="submit"
+              disabled={loading}
               style={{
                 width: "100%",
                 marginTop: 16,
                 padding: "12px 0",
-                background: "#26323A",
+                background: loading ? "#7A8B6F" : "#26323A",
                 color: "#F6F1E7",
                 border: "none",
                 borderRadius: 3,
                 fontSize: 14,
                 letterSpacing: 2,
                 fontFamily: "inherit",
-                cursor: "pointer",
+                cursor: loading ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
               }}
             >
-              {isSignup ? "アカウントを作成" : "ログイン"}
+              {loading ? (
+                <>
+                  <span style={{
+                    width: 16, height: 16,
+                    border: "2px solid #F6F1E7",
+                    borderTop: "2px solid transparent",
+                    borderRadius: "50%",
+                    display: "inline-block",
+                    animation: "spin 0.8s linear infinite",
+                  }} />
+                  {isSignup ? "作成中..." : "ログイン中..."}
+                </>
+              ) : (
+                isSignup ? "アカウントを作成" : "ログイン"
+              )}
             </button>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </form>
 
           <p style={{ textAlign: "center", fontSize: 12, color: "#A6A08C", marginTop: 20 }}>
@@ -493,8 +515,7 @@ export default function App() {
             <div style={{ display: "flex", gap: 8, alignItems: "flex-start", background: "#EFE7D8", border: "1px solid #E3D9C6", borderRadius: 3, padding: "12px 14px", marginBottom: 16, fontSize: 12, color: "#5B7C8D", lineHeight: 1.7 }}>
               <ShieldCheck size={28} style={{ flexShrink: 0, marginTop: 2 }} />
               <span>
-                ここに登録した家族へ、もしもの時にSMSやLINEで通知する機能は今後追加予定です。
-                現在は連絡先の整理のみ行えます。
+                ここに登録した家族へ、もしもの時にSMSで通知します。30日間ログインがない場合、自動的に通知が送られます。
               </span>
             </div>
 
