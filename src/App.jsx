@@ -130,7 +130,7 @@ export default function App() {
     setUserId(data.user.id);
 
     const rowRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/user_data?user_id=eq.${data.user.id}&select=items,contacts`,
+      `${SUPABASE_URL}/rest/v1/user_data?user_id=eq.${data.user.id}&select=items,contacts,alert_days`,
       {
         headers: {
           apikey: SUPABASE_KEY,
@@ -140,6 +140,18 @@ export default function App() {
     );
     const rows = await rowRes.json();
     const row = rows && rows[0];
+
+    // 最終ログイン日時を更新
+    await fetch(`${SUPABASE_URL}/rest/v1/user_data?user_id=eq.${data.user.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${data.access_token}`,
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ last_login: new Date().toISOString() }),
+    });
 
     setCurrentUser(username);
     setItems(row?.items || []);
