@@ -90,7 +90,7 @@ export default function App() {
 
       const rowRes = await fetch(
         `${SUPABASE_URL}/rest/v1/user_data?user_id=eq.${data.user.id}&select=items,contacts`,
-        { headers: { apikey: SUPABASE_KEY, Authorization: Bearer ${data.access_token} } }
+        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${data.access_token}` } }
       );
       const rows = await rowRes.json();
       const row = rows && rows[0];
